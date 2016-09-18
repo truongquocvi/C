@@ -98,7 +98,7 @@ void importDB(char fileIndex[], char fileMeaning[], char wordDB[][100], char tra
 }
 
 void add() {
-    char word[10];
+    char word[100];
     char meaning[1000];
     fpurge(stdin);
     gets(word);
