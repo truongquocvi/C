@@ -19,18 +19,46 @@
  */
 void saveIndex(char word[]);
 void saveMeaning(char word[], char meaning[]);
-void search(char word[]);
-void importDB(char fileIndex[], char fileMeaning[], char wordDB[][10], char meaningDB[][100], int *count);
+void search();
+void add();
+void importDB(char fileIndex[], char fileMeaning[], char wordDB[][100], char transDB[][100], char meaningDB[][100], int *count);
+void chooseMenu();
+
 int main(int argc, char** argv) {
-    char word[10];
-    printf("Search: ");
-    gets(word);
-    printf("Meaning: ");
-    search(word);
+    chooseMenu();
     return (EXIT_SUCCESS);
 }
 
-void search(char word[]) {
+void chooseMenu() {
+    int choice;
+    do {
+        printf("1. Search\n");
+        printf("2. Add\n");
+        printf("3. Exit\n");
+        printf("Choose an option: ");
+        scanf("%d", &choice);
+        switch(choice) {
+            case 1:
+                search();
+                break;
+            case 2:
+                add();
+                break;
+            case 3:
+                break;
+            default:
+                printf("Invalid number\n");
+                break;
+        }
+    } while (choice != 3);
+}
+
+void search() {
+    char word[10];
+    printf("Search: ");
+    fpurge(stdin);
+    gets(word);
+    strlwr(word);
     char fileIndex[10] = "";
     char fileMeaning[10] = "";
     char postfix[] = "_index.dat";
@@ -40,23 +68,28 @@ void search(char word[]) {
     strncpy(fileMeaning, word, 1);
     strcat(fileMeaning, "_meaning.dat");
     strlwr(fileMeaning);
-    char wordDB[1000][10];
+    char wordDB[1000][100];
+    char transDB[1000][100];
     char meaningDB[1000][100];
     int count;
-    importDB(fileIndex, fileMeaning, wordDB, meaningDB, &count);
+    importDB(fileIndex, fileMeaning, wordDB, transDB, meaningDB, &count);
+    char searchDB[1000][strlen(word)];
     for (int i = 0; i < count; i++) {
-        if (strcmp(word, wordDB[i]) == 0)
+        strncpy(searchDB[i], wordDB[i], strlen(word));
+        if (strcmp(word, searchDB[i]) == 0) {
+            puts(transDB[i]);
             puts(meaningDB[i]);
+        }
     }
 }
 
-void importDB(char fileIndex[], char fileMeaning[], char wordDB[][10], char meaningDB[][100], int *count) {
+void importDB(char fileIndex[], char fileMeaning[], char wordDB[][100], char transDB[][100], char meaningDB[][100], int *count) {
     FILE* f = fopen(fileIndex, "r");
     FILE* f1 = fopen(fileMeaning, "r");
     char tmp[1000] = "";
     *count = 0;
     int i = 0;
-    while (fscanf(f, "%s\n", &wordDB[0]) == 1 && fscanf(f1, "%s\n%[^\n]\n", tmp, &meaningDB[0]) == 2) {
+    while (fscanf(f, "%s\n", &wordDB[i]) == 1 && fscanf(f1, "%[^\n]\n%[^\n]\n", &transDB[i], &meaningDB[i]) == 2) {
         (*count)++;
         i++;
     }
@@ -69,6 +102,7 @@ void add() {
     char meaning[1000];
     fpurge(stdin);
     gets(word);
+    strlwr(word);
     fpurge(stdin);
     gets(meaning);
     saveIndex(word);
@@ -77,28 +111,20 @@ void add() {
 
 void saveIndex(char word[]) {
     char postfix[] = "_index.dat";
-    char index[10] = "";
     char fileName[10] = "";
-    for (int i = 0; i < strlen(word); i++) {
-        if (word[i] == ' ')
-            break;
-        index[i] = word[i];
-    }
-    strncpy(fileName, index, 1);
+    strncpy(fileName, word, 1);
     strcat(fileName, postfix);
-    strlwr(fileName);
     FILE* f = fopen(fileName, "a");
-    fprintf(f, "%s\n", index);
+    fprintf(f, "%s\n", word);
     fclose(f);
 }
 
 void saveMeaning(char word[], char meaning[]) {
     char fileName[10] = "";
-    char index[10] = "";
     char postfix[] = "_meaning.dat";
     strncpy(fileName, word, 1);
     strcat(fileName, postfix);
-    strlwr(fileName);
+    strlwr(word);
     FILE* f = fopen(fileName, "a");
     fprintf(f, "%s\n%s\n", word, meaning);
     fclose(f);
